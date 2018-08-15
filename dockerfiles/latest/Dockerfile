@@ -11,7 +11,7 @@ RUN yum install -q -y \
 		 nvme-cli \
 		 open-vm-tools \
                  sudo passwd chrony \
-                 systemd-networkd \
+                 systemd-networkd systemd-resolved \
                  grub grub2-pc-modules grub2-tools grub2-efi-modules grub2-efi shim efibootmgr && \
     printf 'GRUB_DISABLE_OS_PROBER=true\n' >> /etc/default/grub && \
     yum clean all && rm -rf /var/cache/yum && \
@@ -37,8 +37,10 @@ RUN sed -i -e '/ - locale/d' \
 # NO REALLY CLOUD-INIT STOPPIT. let's configure what we can for grub here, sure.
 # this will likely need reconsideration in vmware.
 RUN bash -c 'set -eux ; \
+     f="/etc/default/grub" ; \
      c="nomodeset net.ifnames=0 network-config=e2NvbmZpZzogZGlzYWJsZWR9" ; \
-     augtool -s set /files/etc/default/grub/GRUB_CMDLINE_LINUX_DEFAULT "${c}"'&& \
+     sed -i -e "/^GRUB_CMDLINE_LINUX_DEFAULT/d" "${f}" && \
+     printf "GRUB_CMDLINE_LINUX_DEFAULT=%s\n" "${c}" >> "${f}"' && \
     rm -f /etc/systemd/system/cloud-init.target.wants/cloud-init-local.service && \
     ln -s /dev/null /etc/systemd/system/cloud-init-local.service
 
