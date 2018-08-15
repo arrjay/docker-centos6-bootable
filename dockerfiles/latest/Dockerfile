@@ -3,25 +3,19 @@ FROM build/0common
 MAINTAINER Compute Tools <id-computetools-team@palantir.com>
 
 # install packages
-RUN dpkg-divert --rename /usr/sbin/update-grub && ln -s /bin/true /usr/sbin/update-grub && \
-    dpkg-divert --rename /etc/cloud/cloud.cfg.d/90_dpkg.cfg && \
-    echo "openssh-server HostKey string /dev/null" | debconf-set-selections && \
-    apt-get update && \
-    env LC_ALL=C DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -q -y \
-                 discover laptop-detect os-prober \
-                 linux-generic dbus \
-                 lvm2 thin-provisioning-tools cryptsetup xfsprogs \
-                 openssh-server augeas-tools \
+RUN yum install -q -y \
+                 parted lvm2 cryptsetup xfsprogs \
+                 openssh-server openssh-clients augeas \
+                 selinux-policy-targeted \
                  cloud-init \
 		 nvme-cli \
 		 open-vm-tools \
-                 grub-pc-bin grub-efi-amd64-bin grub-efi-amd64-signed shim-signed shim && \
-    sed -i -e 's/crc32c//' /etc/dracut.conf.d/10-debian.conf && \
-    apt-get -q -y clean all && rm -rf /var/lib/apt/lists/* && \
-    rm -f /etc/ssh/ssh_host_* && \
+                 sudo passwd chrony \
+                 systemd-networkd \
+                 grub grub2-tools grub2-efi-modules grub2-efi shim efibootmgr && \
     printf 'GRUB_DISABLE_OS_PROBER=true\n' >> /etc/default/grub && \
-    rm /usr/sbin/update-grub && dpkg-divert --rename --remove /usr/sbin/update-grub && \
-    echo RESET HostKey | debconf-communicate openssh-server
+    yum clean all && rm -rf /var/cache/yum && \
+    find / -type d \( -name proc -o -name sys \) -prune -o -iname \*.rpmnew -exec rm {} \;
 
 # add dracut and modprobe config for additional drivers
 ADD modprobe.d/* /etc/modprobe.d/
@@ -41,13 +35,9 @@ RUN sed -i -e '/ - locale/d' \
     /etc/cloud/cloud.cfg
 
 # NO REALLY CLOUD-INIT STOPPIT. let's configure what we can for grub here, sure.
-# we also remove ubuntu's dippy splash, but keep quiet.
 # this will likely need reconsideration in vmware.
 RUN bash -c 'set -eux ; \
-     c="$(augtool print /files/etc/default/grub/GRUB_CMDLINE_LINUX_DEFAULT)" ; \
-     c="${c#* = }" ; \
-     c="${c/splash/}" ; \
-     c="${c:0:-3} nomodeset net.ifnames=0 network-config=e2NvbmZpZzogZGlzYWJsZWR9${c: -3}" ; \
+     c="nomodeset net.ifnames=0 network-config=e2NvbmZpZzogZGlzYWJsZWR9" ; \
      augtool -s set /files/etc/default/grub/GRUB_CMDLINE_LINUX_DEFAULT "${c}"'&& \
     rm -f /etc/systemd/system/cloud-init.target.wants/cloud-init-local.service && \
     ln -s /dev/null /etc/systemd/system/cloud-init-local.service
