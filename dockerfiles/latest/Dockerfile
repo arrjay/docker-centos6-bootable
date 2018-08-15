@@ -62,6 +62,7 @@ RUN ln -sf /lib/systemd/system/systemd-networkd.service "/etc/systemd/system/mul
     ln -sf /dev/null "/etc/systemd/system/dhcpcd.service" && \
     ln -sf /dev/null "/etc/systemd/system/NetworkManager.service" && \
     ln -sf /dev/null "/etc/systemd/system/networking.service" && \
+    ln -sf /dev/null "/etc/systemd/system/network.service" && \
     ln -sf /dev/null "/etc/systemd/system/NetworkManager-wait-online.service" && \
     rm -f "/etc/systemd/system/dbus-org.freedesktop.NetworkManager.service" && \
     rm -f "/etc/systemd/system/multi-user.target.wants/NetworkManager.service" && \
