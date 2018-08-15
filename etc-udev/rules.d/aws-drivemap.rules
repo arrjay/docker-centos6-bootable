@@ -31,10 +31,10 @@ LABEL="ec2_attach_ebs_start"
 
 # the program works either way, but we do some additional hilarity for partitions. run and save.
 # the ec2 console/nvme id disagree about whether /dev/ is included - we always strip it.
-PROGRAM="/bin/bash -c 'd=\"/dev/\" ; while IFS= read -r l ; do case \"$l\" in 0000:*) l=\"${l##* }\" ; l=\"${l/$d/}\" ;l=\"${l//[^A-Za-z0-9]/}\" ; [ \"$l\" ] || exit 1 ; echo -n $l ;; esac done <<< \"$(nvme id-ctrl -v /dev/%P)\"'",ENV{EC2_ATTACH_CONFIG}="%c"
+PROGRAM="/etc/udev/aws-volmap.sh nvme_ec2_launch_map /dev/%P",ENV{EC2_ATTACH_CONFIG}="%c"
 
 # ... well, ec2 says one thing, so let's do _that_
-PROGRAM="/bin/bash -c 't=$env{ID_SERIAL_SHORT};echo ${t#vol}'",ENV{EC2_SHORTVOL}="%c"
+PROGRAM="/etc/udev/aws-volmap.sh shorten_volid $env{ID_SERIAL_SHORT}",ENV{EC2_SHORTVOL}="%c"
 
 # disk case - note we get launch config and ebs record
 ENV{DEVTYPE}=="disk",SYMLINK+="disk/cloud/ec2-$env{EC2_ATTACH_CONFIG}",SYMLINK+="disk/cloud/ebs-vol-$env{EC2_SHORTVOL}",GOTO="ec2_attach_end"
@@ -46,7 +46,7 @@ SYMLINK+="disk/cloud/ec2-$env{EC2_ATTACH_CONFIG}-part$env{ID_PART_ENTRY_NUMBER}"
 LABEL="ec2_attach_ebs_end"
 
 # ephemeral volumes!
-ENV{ID_MODEL}!="Amazon EC2 NVMe Instance Storage*", GOTO="ec2_attach_instance_end"
+ENV{ID_SERIAL}!="Amazon EC2 NVMe Instance Storage*", GOTO="ec2_attach_instance_end"
 
 # filter if disk or partition
 ENV{DEVTYPE}=="disk", GOTO="ec2_attach_instance_start"
@@ -59,7 +59,7 @@ LABEL="ec2_attach_instance_start"
 ENV{DEVTYPE}=="disk",SYMLINK+="disk/cloud/ec2-ephemeral$env{MINOR}",GOTO="ec2_attach_end"
 
 # partitions handled here
-PROGRAM="/bin/bash -c 't=$env{ID_PART_ENTRY_DISK};echo ${t#*:}'",ENV{DISK_MINOR}="%c"
+PROGRAM="/etc/udev/aws-volmap.sh getdiskmin $env{ID_PART_ENTRY_DISK}",ENV{DISK_MINOR}="%c"
 SYMLINK+="disk/cloud/ec2-ephemeral$env{DISK_MINOR}-part$env{ID_PART_ENTRY_NUMBER}"
 
 LABEL="ec2_attach_instance_end"
