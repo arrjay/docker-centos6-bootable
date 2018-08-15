@@ -12,7 +12,7 @@ RUN yum install -q -y \
 		 open-vm-tools \
                  sudo passwd chrony \
                  systemd-networkd \
-                 grub grub2-tools grub2-efi-modules grub2-efi shim efibootmgr && \
+                 grub grub2-pc-modules grub2-tools grub2-efi-modules grub2-efi shim efibootmgr && \
     printf 'GRUB_DISABLE_OS_PROBER=true\n' >> /etc/default/grub && \
     yum clean all && rm -rf /var/cache/yum && \
     find / -type d \( -name proc -o -name sys \) -prune -o -iname \*.rpmnew -exec rm {} \;
