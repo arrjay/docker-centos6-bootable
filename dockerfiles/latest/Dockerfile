@@ -38,9 +38,9 @@ RUN sed -i -e '/ - locale/d' \
 # this will likely need reconsideration in vmware.
 RUN bash -c 'set -eux ; \
      f="/etc/default/grub" ; \
-     c="nomodeset net.ifnames=0 network-config=e2NvbmZpZzogZGlzYWJsZWR9" ; \
-     sed -i -e "/^GRUB_CMDLINE_LINUX_DEFAULT/d" "${f}" && \
-     printf "GRUB_CMDLINE_LINUX_DEFAULT=%s\n" "${c}" >> "${f}"' && \
+     c="nomodeset quiet net.ifnames=0 network-config=e2NvbmZpZzogZGlzYWJsZWR9" ; \
+     sed -i -e "/^GRUB_CMDLINE_LINUX_DEFAULT=/d" "${f}" && \
+     printf "GRUB_CMDLINE_LINUX_DEFAULT=\"%s\"\n" "${c}" >> "${f}"' && \
     rm -f /etc/systemd/system/cloud-init.target.wants/cloud-init-local.service && \
     ln -s /dev/null /etc/systemd/system/cloud-init-local.service
 
