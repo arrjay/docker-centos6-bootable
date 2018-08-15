@@ -22,7 +22,7 @@ ADD modprobe.d/* /etc/modprobe.d/
 ADD dracut.conf.d/* /etc/dracut.conf.d/
 
 # add udev config for stabilized madness
-ADD udev-rules.d/* /etc/udev/rules.d/
+ADD etc-udev/* /etc/udev/
 
 # reconfigure cloud-init the files to replace os-shipped and add things...
 ADD cloud.cfg.d/* /etc/cloud/cloud.cfg.d/
