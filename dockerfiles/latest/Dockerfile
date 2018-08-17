@@ -1,4 +1,4 @@
-FROM centos:7
+FROM centos:6
 
 MAINTAINER RJ Bergeron <rbergero@gmail.com>
 
@@ -50,25 +50,9 @@ RUN echo 'add_drivers+=" nouveau vfio-pci "' >> /etc/dracut.conf
 RUN sed -i -e '/ - locale/d' /etc/cloud/cloud.cfg
 ADD /cloud.cfg.d /etc/cloud/cloud.cfg.d
 
-# systemd-networkd for network config please
-RUN ln -sf /lib/systemd/system/systemd-networkd.service "/etc/systemd/system/multi-user.target.wants/systemd-networkd.service" && \
-    mkdir -p "/etc/systemd/system/sockets.target.wants" && \
-    ln -sf /lib/systemd/system/systemd-networkd.socket  "/etc/systemd/system/sockets.target.wants/systemd-networkd.service" && \
-    ln -sf /dev/null "/etc/systemd/system/dhcpcd.service" && \
-    ln -sf /dev/null "/etc/systemd/system/NetworkManager.service" && \
-    ln -sf /dev/null "/etc/systemd/system/networking.service" && \
-    ln -sf /dev/null "/etc/systemd/system/NetworkManager-wait-online.service" && \
-    rm -f "/etc/systemd/system/dbus-org.freedesktop.NetworkManager.service" && \
-    rm -f "/etc/systemd/system/multi-user.target.wants/NetworkManager.service" && \
-    rm -f "/etc/systemd/system/dbus-org.freedesktop.nm-dispatcher.service" && \
-    mkdir -p "/etc/systemd/network"
-ADD /systemd-network /etc/systemd/network
-RUN find /etc/systemd/network -type f -exec chmod a+r {} \;
-
 # custom script to dump platform info to a directory for systemd hooks
 ADD platform-info/platform-info.service /etc/systemd/system/platform-info.service
 ADD platform-info/platform-info.sh      /usr/local/sbin/platform-info.sh
-RUN ln -sf /etc/systemd/system/platform-info.service "/etc/systemd/system/multi-user.target.wants/platform-info.service"
 
 # disable smartd on virtual hosts
 ADD smartd.service.d /etc/systemd/system/smartd.service.d

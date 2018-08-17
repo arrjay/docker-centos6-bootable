@@ -3,8 +3,8 @@
 set -ex
 
 [ "${DOCKER_SINK}" ] && {
-  [ -z "${NOPUSH}" ] && docker pull "${DOCKER_SINK}/centos:7"
-  docker tag  "${DOCKER_SINK}/centos:7" "centos:7"
+  [ -z "${NOPUSH}" ] && docker pull "${DOCKER_SINK}/centos:6"
+  docker tag  "${DOCKER_SINK}/centos:6" "centos:6"
 }
 
 set -u
