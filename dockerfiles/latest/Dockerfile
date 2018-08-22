@@ -42,13 +42,6 @@ RUN bash -c 'set -eux ; \
      sed -i -e "/^GRUB_CMDLINE_LINUX_DEFAULT=/d" "${f}" && \
      printf "GRUB_CMDLINE_LINUX_DEFAULT=\"%s\"\n" "${c}" >> "${f}"'
 
-# generate bootloader files
-# efi-x64
-RUN mkdir -p /boot/grub/x86_64-efi && cp /usr/lib/grub/x86_64-efi/*.mod /boot/grub/x86_64-efi
-
-# create efi directory for mounts
-RUN mkdir -p /boot/efi
-
 # when/if we run grub-install
 ADD grub.d/* /etc/grub.d/
 
