@@ -1,4 +1,4 @@
-FROM centos:7
+FROM upstream
 
 RUN yum install -q -y dracut kernel kernel-devel dkms && \
     yum clean all && rm -rf /var/cache/yum && \

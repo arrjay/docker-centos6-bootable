@@ -4,7 +4,7 @@ set -ex
 
 [ "${DOCKER_SINK}" ] && {
   docker pull "${DOCKER_SINK}/${PRODUCT}"
-  docker tag  "${DOCKER_SINK}/${PRODUCT}" "${PRODUCT}"
+  docker tag  "${DOCKER_SINK}/${PRODUCT}" "upstream"
 }
 
 set -u
