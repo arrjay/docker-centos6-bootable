@@ -5,7 +5,7 @@ jobs:
     docker:
        - image: docker.palantir.build/circle2-build-images/ubuntu-jdk-npm:0.19.0
     working_directory: ~/project
-    envronment:
+    environment:
       PRODUCT=centos:6
     steps:
       - checkout
