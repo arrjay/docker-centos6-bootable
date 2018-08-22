@@ -40,9 +40,7 @@ RUN bash -c 'set -eux ; \
      f="/etc/default/grub" ; \
      c="nomodeset quiet net.ifnames=0 network-config=e2NvbmZpZzogZGlzYWJsZWR9" ; \
      sed -i -e "/^GRUB_CMDLINE_LINUX_DEFAULT=/d" "${f}" && \
-     printf "GRUB_CMDLINE_LINUX_DEFAULT=\"%s\"\n" "${c}" >> "${f}"' && \
-    rm -f /etc/systemd/system/cloud-init.target.wants/cloud-init-local.service && \
-    ln -s /dev/null /etc/systemd/system/cloud-init-local.service
+     printf "GRUB_CMDLINE_LINUX_DEFAULT=\"%s\"\n" "${c}" >> "${f}"'
 
 # generate bootloader files
 # efi-x64
@@ -54,31 +52,8 @@ RUN mkdir -p /boot/efi
 # when/if we run grub-install
 ADD grub.d/* /etc/grub.d/
 
-# systemd-networkd for network config please
-RUN ln -sf /lib/systemd/system/systemd-networkd.service "/etc/systemd/system/multi-user.target.wants/systemd-networkd.service" && \
-    ln -sf /lib/systemd/system/systemd-resolved.service "/etc/systemd/system/multi-user.target.wants/systemd-resolved.service" && \
-    mkdir -p "/etc/systemd/system/sockets.target.wants" && \
-    ln -sf /lib/systemd/system/systemd-networkd.socket  "/etc/systemd/system/sockets.target.wants/systemd-networkd.service" && \
-    ln -sf /dev/null "/etc/systemd/system/dhcpcd.service" && \
-    ln -sf /dev/null "/etc/systemd/system/NetworkManager.service" && \
-    ln -sf /dev/null "/etc/systemd/system/networking.service" && \
-    ln -sf /dev/null "/etc/systemd/system/network.service" && \
-    ln -sf /dev/null "/etc/systemd/system/NetworkManager-wait-online.service" && \
-    rm -f "/etc/systemd/system/dbus-org.freedesktop.NetworkManager.service" && \
-    rm -f "/etc/systemd/system/multi-user.target.wants/NetworkManager.service" && \
-    rm -f "/etc/systemd/system/dbus-org.freedesktop.nm-dispatcher.service" && \
-    mkdir -p "/etc/systemd/network" && \
-    rm -f "/etc/network/interfaces"
-ADD /systemd-network /etc/systemd/network
-RUN find /etc/systemd/network -type f -exec chmod a+r {} \;
-
 # custom script to dump platform info to a directory for systemd hooks
-ADD platform-info/platform-info.service /etc/systemd/system/platform-info.service
 ADD platform-info/platform-info.sh      /usr/local/sbin/platform-info.sh
-RUN ln -sf /etc/systemd/system/platform-info.service "/etc/systemd/system/multi-user.target.wants/platform-info.service"
-
-# service to start console if we find a hvc0 console *shrug*
-ADD hvc0-console.service /etc/systemd/system/hvc0-console.service
 
 # image installation scripts
 ADD /scripts /scripts
