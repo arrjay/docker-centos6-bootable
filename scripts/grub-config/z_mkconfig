@@ -1,3 +1,48 @@
 #!/usr/bin/env bash
 
-grub2-mkconfig -o /boot/grub2/grub.cfg
+# you're in centos 6 there is no grub-config
+# so we make the entire config _right now_
+
+# pick up any config from host env here
+# shellcheck disable=SC1091
+. /root/fs-env
+
+# are you installing via a serial console _right now_? if so, config grub serialisms.
+if [ -z "${CONFIG_SERIAL_INSTALL}" ] ; then
+  CONFIG_SERIAL_INSTALL=$(tty)
+fi
+
+# serial install flag can be.../dev/ttyS (serial) | /dev/? (not serial) | a number (forcedserial) | not a number (garbage)
+case "${CONFIG_SERIAL_INSTALL}" in
+  /dev/ttyS*) CONFIG_SERIAL_INSTALL="${CONFIG_SERIAL_INSTALL#/dev/ttyS}" ;;
+  /dev/*) unset CONFIG_SERIAL_INSTALL ;;
+  [0-9]*) : ;; # technically this line is just checking if it _starts_ with a number.
+  *)
+    echo "CONFIG_SERIAL_INSTALL should be set to the unit number of the serial port (likely 0 or 1)" 1>&2
+    unset CONFIG_SERIAL_INSTALL
+    ;;
+esac
+
+# FIXME: I should be able to deduce the LV at this point.
+cmdline="ro root=/dev/mapper/system/root LANG=en_US.UTF-8 rd_LVM_LV=system/root rd_NO_LUKS crashkernel=auto growpart=hda2 growpart=vda2 growpart=xvda2"
+
+if [ ! -z "${CONFIG_SERIAL_INSTALL}" ] ; then
+  # add the serial port here - hardwired to 115200n8 tho
+  cmdline="${cmdline} console=ttyS${CONFIG_SERIAL_INSTALL},115200n8"
+fi
+
+printf 'default=0\ntimeout=9\n' > /boot/grub/grub.conf
+for k in /boot/vmlinuz-*x86_64 ; do
+  kf=$(basename $k)
+  kv=${kf#vmlinuz-}
+  {
+    printf 'title CentOS (%s)\n' ${kv}
+    printf ' root (hd0,0)\n kernel /%s' ${kf}
+    printf ' %s\n' "${cmdline}"
+    printf ' initrd /initramfs-%s.img\n' ${kv}
+  } >> /boot/grub/grub.conf
+done
+
+# add convienience symlink, menu.lst is what grub 1 wants...
+ln -s /boot/grub/grub.conf /etc/grub.conf
+ln -s ./grub.conf /boot/grub/menu.lst

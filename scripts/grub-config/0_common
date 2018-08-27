@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
+read -r cpe_release < /etc/system-release-cpe
+
 set -ex
 
 # pick up any config from host env here
+# shellcheck disable=SC1091
 . /root/fs-env
 
 # are you installing via a serial console _right now_? if so, config grub serialisms.
@@ -21,27 +24,38 @@ case "${CONFIG_SERIAL_INSTALL}" in
     ;;
 esac
 
-# grab the command line we have here
-cmdline=$(augtool print /files/etc/default/grub/GRUB_CMDLINE_LINUX_DEFAULT)
-cmdline="${cmdline#* = }"
+config_default_grub() {
+  # grab the command line we have here
+  cmdline=$(augtool print /files/etc/default/grub/GRUB_CMDLINE_LINUX_DEFAULT)
+  cmdline="${cmdline#* = }"
 
-# now check if CONFIG_SERIAL_INSTALL is still set
+  # now check if CONFIG_SERIAL_INSTALL is still set
 
-if [ ! -z "${CONFIG_SERIAL_INSTALL}" ] ; then
-  {
-    printf 'GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=%s --word=8 --parity=no --stop=1"\n' "${CONFIG_SERIAL_INSTALL}"
-    printf 'GRUB_TERMINAL="serial"\n'
-  } >> /etc/default/grub
-  # add the serial port here - hardwired to 115200n8 tho
-  cmdline="${cmdline:0:-3} console=ttyS${CONFIG_SERIAL_INSTALL},115200n8${cmdline: -3}"
-else
-  printf 'GRUB_TERMINAL="console"\n' >> /etc/default/grub
-fi
+  if [ ! -z "${CONFIG_SERIAL_INSTALL}" ] ; then
+    {
+      printf 'GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=%s --word=8 --parity=no --stop=1"\n' "${CONFIG_SERIAL_INSTALL}"
+      printf 'GRUB_TERMINAL="serial"\n'
+    } >> /etc/default/grub
+    # add the serial port here - hardwired to 115200n8 tho
+    cmdline="${cmdline:0:-3} console=ttyS${CONFIG_SERIAL_INSTALL},115200n8${cmdline: -3}"
+  else
+    printf 'GRUB_TERMINAL="console"\n' >> /etc/default/grub
+  fi
 
-echo "setting GRUB_CMDLINE_LINUX_DEFAULT to ${cmdline}"
+  echo "setting GRUB_CMDLINE_LINUX_DEFAULT to ${cmdline}"
 
-# update our cmdline, finally
-augtool -s set /files/etc/default/grub/GRUB_CMDLINE_LINUX_DEFAULT "${cmdline}"
+  # update our cmdline, finally
+  augtool -s set /files/etc/default/grub/GRUB_CMDLINE_LINUX_DEFAULT "${cmdline}"
+}
+
+# if this is centos and older than centos 7, do not configure default/grub.
+case "${cpe_release:-}" in
+  *centos:linux:*) 
+    vn="$(echo "${cpe_release}" | cut -d: -f5)"
+    [ "${vn}" -ge "7" ] && config_default_grub
+  ;;
+  *) config_default_grub
+esac
 
 # hack vt_handoff out of mkconfig scripts
 for f in /etc/grub.d/* ; do

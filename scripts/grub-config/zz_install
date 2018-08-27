@@ -2,7 +2,18 @@
 
 . /root/fs-env
 
+# welcome to grub 1
+# hahahaha
+cp /usr/share/grub/x86_64-redhat/* /mnt/sysimage/boot/grub
+
+# FIXME - will likely want to export chroot mount from host
+grep /mnt/sysimage /proc/mounts  | sed -e 's@mnt/sysimage/@@g' -e 's@mnt/sysimage@@g' > /etc/mtab
+
 for d in ${BIOS_BOOTDEVS} ; do
   d=${d/[0-9]/}
-  grub2-install "${d}"
+  printf '(hd0) /dev/%s\n' ${d} > /boot/grub/device.map
+  printf 'root (hd0,0)\nsetup (hd0)\n' | /bin/env PATH=/bin:/usr/bin:/sbin:/usr/sbin /sbin/grub --device-map=/boot/grub/device.map
 done
+
+# zap the old mtab
+rm /etc/mtab

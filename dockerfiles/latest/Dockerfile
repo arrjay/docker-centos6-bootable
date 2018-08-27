@@ -4,7 +4,6 @@ MAINTAINER Compute Tools <id-computetools-team@palantir.com>
 
 # install packages
 RUN yum install -q -y \
-                 crontabs \
                  parted lvm2 cryptsetup xfsprogs \
                  openssh-server openssh-clients augeas \
                  selinux-policy-targeted \
