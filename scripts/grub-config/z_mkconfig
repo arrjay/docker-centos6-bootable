@@ -24,7 +24,7 @@ case "${CONFIG_SERIAL_INSTALL}" in
 esac
 
 # FIXME: I should be able to deduce the LV at this point.
-cmdline="ro root=/dev/mapper/system/root LANG=en_US.UTF-8 rd_LVM_LV=system/root rd_NO_LUKS crashkernel=auto growpart=hda2 growpart=vda2 growpart=xvda2"
+cmdline="ro root=/dev/mapper/system-root LANG=en_US.UTF-8 rd_LVM_LV=system/root rd_NO_LUKS crashkernel=auto growpart=hda2 growpart=vda2 growpart=xvda2"
 
 if [ ! -z "${CONFIG_SERIAL_INSTALL}" ] ; then
   # add the serial port here - hardwired to 115200n8 tho
@@ -45,7 +45,7 @@ for k in /boot/vmlinuz-*x86_64 ; do
     printf 'title CentOS (%s)\n' ${kv}
     printf ' root (hd0,%s)\n kernel /%s' ${bootpart} ${kf}
     printf ' %s\n' "${cmdline}"
-    printf ' initrd /initramfs-%s.img\n' ${kv}
+    printf ' initrd /initrd.img-%s\n' ${kv}
   } >> /boot/grub/grub.conf
 done
 
