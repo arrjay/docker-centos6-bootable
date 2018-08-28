@@ -4,6 +4,7 @@
 
 # welcome to grub 1
 # hahahaha
+mkdir -p /boot/grub
 cp /usr/share/grub/x86_64-redhat/* /boot/grub
 
 # FIXME - will likely want to export chroot mount from host
