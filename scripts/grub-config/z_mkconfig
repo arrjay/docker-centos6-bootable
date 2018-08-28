@@ -31,13 +31,19 @@ if [ ! -z "${CONFIG_SERIAL_INSTALL}" ] ; then
   cmdline="${cmdline} console=ttyS${CONFIG_SERIAL_INSTALL},115200n8"
 fi
 
+# you well need to track the /boot references though
+ootpart="$(df -P /boot | tail -1)"
+bootpart="${bootpart/ */}"
+bootpart="${bootpart/*[^0-9]/}"
+(( bootpart-- ))
+
 printf 'default=0\ntimeout=9\n' > /boot/grub/grub.conf
 for k in /boot/vmlinuz-*x86_64 ; do
   kf=$(basename $k)
   kv=${kf#vmlinuz-}
   {
     printf 'title CentOS (%s)\n' ${kv}
-    printf ' root (hd0,0)\n kernel /%s' ${kf}
+    printf ' root (hd0,%s)\n kernel /%s' ${bootpart} ${kf}
     printf ' %s\n' "${cmdline}"
     printf ' initrd /initramfs-%s.img\n' ${kv}
   } >> /boot/grub/grub.conf
