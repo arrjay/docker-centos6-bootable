@@ -42,6 +42,9 @@ RUN bash -c 'set -eux ; \
      sed -i -e "/^GRUB_CMDLINE_LINUX_DEFAULT=/d" "${f}" && \
      printf "GRUB_CMDLINE_LINUX_DEFAULT=\"%s\"\n" "${c}" >> "${f}"'
 
+# break /var/run -> /run symlink, replace with directory.
+RUN rm /var/run && mkdir /var/run
+
 # when/if we run grub-install
 ADD grub.d/* /etc/grub.d/
 
