@@ -4,5 +4,5 @@ kerns=(/boot/vmlinuz-*)
 
 for k in "${kerns[@]}" ; do
   v="${k#/boot/vmlinuz-}"
-  dracut -f "/boot/initrd.img-${v}" "${v}"
+  dracut -f "/boot/initramfs-${v}.img" "${v}"
 done

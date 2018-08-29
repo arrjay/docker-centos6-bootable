@@ -45,7 +45,7 @@ for k in /boot/vmlinuz-*x86_64 ; do
     printf 'title CentOS (%s)\n' ${kv}
     printf ' root (hd0,%s)\n kernel /%s' ${bootpart} ${kf}
     printf ' %s\n' "${cmdline}"
-    printf ' initrd /initrd.img-%s\n' ${kv}
+    printf ' initrd /initramfs-%s.img\n' ${kv}
   } >> /boot/grub/grub.conf
 done
 
