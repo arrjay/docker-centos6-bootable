@@ -23,8 +23,23 @@ case "${CONFIG_SERIAL_INSTALL}" in
     ;;
 esac
 
-# FIXME: I should be able to deduce the LV at this point.
-cmdline="ro root=/dev/mapper/system-root LANG=en_US.UTF-8 rd_LVM_LV=system/root rd_NO_LUKS crashkernel=auto growpart=hda2 growpart=vda2 growpart=xvda2"
+s='/' # so I can use this in bash string replacement
+cmdline="ro LANG=en_US.UTF-8 rd_NO_LUKS crashkernel=auto growpart=hda2 growpart=vda2 growpart=xvda2"
+rootpart="$(df -P / | tail -1)"
+rootpart="${rootpart/ */}"
+
+# if we are on LVM, magic up an argument for dracut plz
+case "${rootpart}" in
+  /dev/mapper/*-*) # lvm
+    lv="${rootpart/*mapper/}" # /system-root
+    lv="${lv:1}"              # system-root
+    lv="${lv/-/${s}/}"        # system/root
+    cmdline="${cmdline} rd_LVM_LV=${lv}"
+  ;;
+esac
+
+# okay, now add the real root partition in.
+cmdline="${cmdline} root=${rootpart}"
 
 if [ ! -z "${CONFIG_SERIAL_INSTALL}" ] ; then
   # add the serial port here - hardwired to 115200n8 tho
