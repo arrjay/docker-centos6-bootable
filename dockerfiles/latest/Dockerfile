@@ -42,6 +42,9 @@ RUN bash -c 'set -eux ; \
      sed -i -e "/^GRUB_CMDLINE_LINUX_DEFAULT=/d" "${f}" && \
      printf "GRUB_CMDLINE_LINUX_DEFAULT=\"%s\"\n" "${c}" >> "${f}"'
 
+# add a skeleton to boot any eth0 we got
+ADD ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-eth0
+
 # break /var/run -> /run symlink, replace with directory.
 RUN rm /var/run && mkdir /var/run
 
