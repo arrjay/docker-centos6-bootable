@@ -5,6 +5,7 @@ MAINTAINER Compute Tools <id-computetools-team@palantir.com>
 # install packages
 RUN yum install -q -y \
                  parted lvm2 cryptsetup xfsprogs \
+                 NetworkManager \
                  openssh-server openssh-clients augeas \
                  selinux-policy-targeted \
                  cloud-init \
@@ -42,8 +43,8 @@ RUN bash -c 'set -eux ; \
      sed -i -e "/^GRUB_CMDLINE_LINUX_DEFAULT=/d" "${f}" && \
      printf "GRUB_CMDLINE_LINUX_DEFAULT=\"%s\"\n" "${c}" >> "${f}"'
 
-# add a skeleton to boot any eth0 we got
-ADD ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-eth0
+# turn on NetworkManager instead :3
+RUN chkconfig NetworkManager on
 
 # break /var/run -> /run symlink, replace with directory.
 RUN rm /var/run && mkdir /var/run

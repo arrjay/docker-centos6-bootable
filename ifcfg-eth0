@@ -1,4 +1,0 @@
-# A network device
-DEVICE=eth0
-BOOTPROTO=dhcp
-ONBOOT=yes
