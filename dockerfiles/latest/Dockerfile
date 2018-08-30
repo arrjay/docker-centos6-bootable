@@ -46,9 +46,6 @@ RUN bash -c 'set -eux ; \
 # turn on NetworkManager instead :3
 RUN chkconfig NetworkManager on
 
-# break /var/run -> /run symlink, replace with directory.
-RUN rm /var/run && mkdir /var/run
-
 # when/if we run grub-install
 ADD grub.d/* /etc/grub.d/
 
